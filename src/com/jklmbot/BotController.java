@@ -66,7 +66,6 @@ public class BotController {
     }
 
     private void findMatches(String key) {
-
         for (String word: words) {
             if(word.contains(key)) {
                 lastResults.add(word);
@@ -87,11 +86,11 @@ public class BotController {
     private void modeAll() {
         int size = lastResults.size();
         if (size > 100) {
-            System.out.println("More than 100 results, showing only top 100");
+            System.out.println("Found " + size + " results, showing only top 100");
             size = 100;
         }
         for(int i = 0; i < size; i++) {
-            formatListResult(i);
+            formatListResult(i + 1);
         }
     }
 
