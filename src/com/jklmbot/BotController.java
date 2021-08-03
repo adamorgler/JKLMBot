@@ -28,7 +28,7 @@ public class BotController {
         words = new ArrayList<String>();
         mode = 2;
         initWordList();
-        System.out.println("Modes: | 0-all | 1-first | 2-random | 3-long | 4-short |");
+        displayModes();
     }
 
     public boolean step() {
@@ -37,6 +37,7 @@ public class BotController {
         Scanner sc = new Scanner(System.in);
         if(sc.hasNextInt()) {
             mode = sc.nextInt();
+            displayModes();
             return true;
         }
         String input = sc.nextLine();
@@ -121,6 +122,10 @@ public class BotController {
         }
     }
 
+    private void displayModes() {
+        System.out.println("Modes: | 0-all | 1-first | 2-random | 3-long | 4-short |");
+        System.out.println("Mode selected: " + mode);
+    }
     private void reset() {
         lastResults = new ArrayList<String>();
         lastLong = null;
