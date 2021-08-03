@@ -2,12 +2,13 @@ package com.jklmbot;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.Scanner;
 
 public class BotController {
+
+    private final int ALL_DIS_DEFAULT = 25;
 
     private ArrayList<String> words;
 
@@ -17,16 +18,22 @@ public class BotController {
 
     private String lastShort;
 
+    private String lastKey;
+
     // 0 - all matches
+    // 0 {n} - all matches, display top n
     // 1 - first match
     // 2 - random match
     // 3 - longest match
     // 4 - shortest match
     private int mode;
 
+    private int allDisplayAmount;
+
     public BotController() {
         words = new ArrayList<String>();
         mode = 2;
+        allDisplayAmount = ALL_DIS_DEFAULT;
         initWordList();
         displayModes();
     }
@@ -35,13 +42,20 @@ public class BotController {
         reset();
         System.out.println("Enter word part: ");
         Scanner sc = new Scanner(System.in);
+        // check for mode change
         if(sc.hasNextInt()) {
             mode = sc.nextInt();
             displayModes();
+            displayAllSpecial();
+            if (mode == 0 && sc.hasNextInt()) {
+                allDisplayAmount = sc.nextInt();
+            } else {
+                allDisplayAmount = ALL_DIS_DEFAULT;
+            }
             return true;
         }
-        String input = sc.nextLine();
-        findMatches(input);
+        lastKey = sc.nextLine();
+        findMatches();
         switch(mode) {
             case(0):
                 modeAll();
@@ -66,9 +80,9 @@ public class BotController {
         return true;
     }
 
-    private void findMatches(String key) {
+    private void findMatches() {
         for (String word: words) {
-            if(word.contains(key)) {
+            if(word.contains(lastKey)) {
                 lastResults.add(word);
                 if (lastLong == null && lastShort == null) {
                     lastLong = word;
@@ -86,30 +100,50 @@ public class BotController {
 
     private void modeAll() {
         int size = lastResults.size();
-        if (size > 100) {
-            System.out.println("Found " + size + " results, showing only top 100");
-            size = 100;
+        if (size > allDisplayAmount) {
+            System.out.println("Found " + size + " results, showing only top " + allDisplayAmount);
+            size = allDisplayAmount;
         }
-        for(int i = 0; i < size; i++) {
-            formatListResult(i + 1);
+        if (size > 0) {
+            for(int i = 0; i < size; i++) {
+                formatListResult(i + 1);
+            }
+        } else {
+            displayNoWordExists();
         }
     }
 
     private void modeFirst() {
-        formatResult(0);
+        if (lastResults.size() > 0) {
+            formatResult(0);
+        } else {
+            displayNoWordExists();
+        }
     }
 
     private void modeRandom() {
-        Random rand = new Random();
-        formatResult(rand.nextInt(lastResults.size()));
+        if (lastResults.size() > 0) {
+            Random rand = new Random();
+            formatResult(rand.nextInt(lastResults.size()));
+        } else {
+            displayNoWordExists();
+        }
     }
 
     private void modeLongest() {
-        System.out.println(lastLong);
+        if (lastLong != null) {
+            System.out.println(lastLong);
+        } else {
+            displayNoWordExists();
+        }
     }
 
     private void modeShortest() {
-        System.out.println(lastShort);
+        if (lastShort != null) {
+            System.out.println(lastLong);
+        } else {
+            displayNoWordExists();
+        }
     }
 
     private void formatResult(int i) {
@@ -122,16 +156,23 @@ public class BotController {
         }
     }
 
+    private void displayNoWordExists() {
+        System.out.println("No word exists containing '" + lastKey + "'");
+    }
+
     private void displayModes() {
         System.out.println("Modes: | 0-all | 1-first | 2-random | 3-long | 4-short |");
         System.out.println("Mode selected: " + mode);
+    }
+
+    private void displayAllSpecial() {
+        System.out.println("Optional: type 0 {n} to show n amount of results");
     }
     private void reset() {
         lastResults = new ArrayList<String>();
         lastLong = null;
         lastShort = null;
     }
-
 
     private void initWordList() {
         File f = new File("words_alpha.txt");
